@@ -585,59 +585,95 @@ export default function HarishMusicHub() {
         {/* ABOUT */}
         {section === "about" && (
           <div className="about-section">
+
+            {/* Hero banner */}
             <div className="about-hero">
-              <div className="about-app-icon">♪</div>
-              <h1 className="about-app-name">Harish MusicHub</h1>
-              <span className="about-version">v1.0.0</span>
-              <p className="about-tagline">Built with ❤️ for Telugu music lovers</p>
+              <div className="about-hero-glow" />
+              <div className="about-hero-inner">
+                <div className="about-app-icon">♪</div>
+                <h1 className="about-app-name">Harish MusicHub</h1>
+                <div className="about-badges">
+                  <span className="about-badge purple">v1.0.0</span>
+                  <span className="about-badge green">Live</span>
+                  <span className="about-badge gray">March 2026</span>
+                </div>
+                <p className="about-tagline">Built with ❤️ for Telugu music lovers</p>
+              </div>
             </div>
 
-            <div className="about-cards">
-              <div className="about-card">
-                <div className="about-card-label">Developer</div>
-                <div className="about-card-value">Harish Saligama</div>
-              </div>
-              <div className="about-card">
-                <div className="about-card-label">GitHub</div>
+            {/* Developer card */}
+            <div className="about-dev-card">
+              <div className="about-dev-avatar">HS</div>
+              <div className="about-dev-info">
+                <div className="about-dev-name">Harish Saligama</div>
+                <div className="about-dev-role">Developer & Creator</div>
                 <a
-                  className="about-card-link"
+                  className="about-dev-github"
                   href="https://github.com/SALIGAMA"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  github.com/SALIGAMA ↗
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                  github.com/SALIGAMA
                 </a>
-              </div>
-              <div className="about-card">
-                <div className="about-card-label">Version</div>
-                <div className="about-card-value">1.0.0 — March 2026</div>
-              </div>
-              <div className="about-card">
-                <div className="about-card-label">Built with</div>
-                <div className="about-card-value">React · Vite · YouTube API · lyrics.ovh</div>
-              </div>
-              <div className="about-card">
-                <div className="about-card-label">Deployed on</div>
-                <div className="about-card-value">Vercel</div>
               </div>
             </div>
 
-            <div className="about-features">
-              <div className="about-features-title">Features</div>
-              <ul className="about-features-list">
-                <li>🎵 Search any song worldwide</li>
-                <li>🎶 Harish Rocks — Telugu hits section</li>
-                <li>📝 Live lyrics fetching</li>
-                <li>⏮ Play / Pause / Next / Previous</li>
-                <li>🔊 Volume control & seek bar</li>
-                <li>📱 Works on mobile, tablet & desktop</li>
-                <li>↗ Share with friends via WhatsApp</li>
-              </ul>
+            {/* Stats row */}
+            <div className="about-stats">
+              <div className="about-stat">
+                <div className="about-stat-value">4</div>
+                <div className="about-stat-label">Sections</div>
+              </div>
+              <div className="about-stat-divider" />
+              <div className="about-stat">
+                <div className="about-stat-value">7</div>
+                <div className="about-stat-label">Features</div>
+              </div>
+              <div className="about-stat-divider" />
+              <div className="about-stat">
+                <div className="about-stat-value">∞</div>
+                <div className="about-stat-label">Songs</div>
+              </div>
+              <div className="about-stat-divider" />
+              <div className="about-stat">
+                <div className="about-stat-value">Free</div>
+                <div className="about-stat-label">Always</div>
+              </div>
+            </div>
+
+            {/* Features grid */}
+            <div className="about-features-grid">
+              {[
+                { icon: "🎵", title: "Global Search",    desc: "Search any song or artist worldwide" },
+                { icon: "🎶", title: "Harish Rocks",     desc: "Curated Telugu cinema hits" },
+                { icon: "📝", title: "Live Lyrics",      desc: "Fetch lyrics for any track instantly" },
+                { icon: "⏯",  title: "Full Controls",    desc: "Play, pause, skip, seek & volume" },
+                { icon: "📱", title: "All Devices",      desc: "Mobile, tablet & desktop ready" },
+                { icon: "↗",  title: "Easy Sharing",     desc: "Share via WhatsApp or any app" },
+              ].map((f) => (
+                <div key={f.title} className="about-feature-card">
+                  <span className="about-feature-icon">{f.icon}</span>
+                  <div className="about-feature-title">{f.title}</div>
+                  <div className="about-feature-desc">{f.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Tech stack */}
+            <div className="about-tech">
+              <div className="about-tech-title">Built with</div>
+              <div className="about-tech-pills">
+                {["React 19", "Vite 8", "YouTube API", "lyrics.ovh", "Vercel"].map((t) => (
+                  <span key={t} className="about-tech-pill">{t}</span>
+                ))}
+              </div>
             </div>
 
             <div className="about-footer">
-              Made with passion by Harish Saligama
+              © 2026 Harish Saligama · All rights reserved
             </div>
+
           </div>
         )}
       </main>

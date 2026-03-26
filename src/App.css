@@ -961,124 +961,227 @@
 
 /* ── About ───────────────────────────────────────────────────────────────── */
 .about-section {
-  padding: 40px 48px;
-  max-width: 640px;
+  overflow-y: auto;
+  height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #1e1e2e transparent;
 }
 
+/* Hero */
 .about-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f0720 0%, #1a0a3e 40%, #0d0d14 100%);
+  padding: 56px 48px 40px;
   text-align: center;
-  margin-bottom: 36px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid #1a1a28;
 }
+
+.about-hero-glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.about-hero-inner { position: relative; z-index: 1; }
 
 .about-app-icon {
-  font-size: 56px;
+  font-size: 64px;
   color: #a855f7;
   line-height: 1;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 24px rgba(168,85,247,0.6));
 }
 
 .about-app-name {
   color: #fff;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  margin: 0 0 8px;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin: 0 0 16px;
 }
 
-.about-version {
-  background: #1e1030;
-  border: 1px solid #4c1d95;
-  border-radius: 12px;
-  color: #a855f7;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 3px 10px;
+.about-badges {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
+
+.about-badge {
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  text-transform: uppercase;
+}
+
+.about-badge.purple { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; }
+.about-badge.green  { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.3);  color: #4ade80; }
+.about-badge.gray   { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #71717a; }
 
 .about-tagline {
   color: #71717a;
-  font-size: 14px;
-  margin: 14px 0 0;
+  font-size: 15px;
+  margin: 0;
 }
 
-.about-cards {
+/* Developer card */
+.about-dev-card {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 28px;
-}
-
-.about-card {
   align-items: center;
-  background: #111118;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 16px;
-  gap: 16px;
+  gap: 18px;
+  margin: 24px 32px;
+  background: linear-gradient(135deg, #111118, #16102a);
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
-.about-card-label {
-  color: #52525b;
+.about-dev-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(168,85,247,0.4);
+}
+
+.about-dev-info { display: flex; flex-direction: column; gap: 4px; }
+
+.about-dev-name {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.about-dev-role {
+  color: #71717a;
   font-size: 12px;
+}
+
+.about-dev-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #a855f7;
+  font-size: 12px;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: color 0.15s;
+}
+
+.about-dev-github:hover { color: #c084fc; }
+
+/* Stats */
+.about-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 32px 24px;
+  background: #111118;
+  border: 1px solid #1a1a28;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.about-stat { text-align: center; }
+
+.about-stat-value {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.about-stat-label {
+  color: #52525b;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.5px;
+  margin-top: 4px;
   text-transform: uppercase;
-  flex-shrink: 0;
 }
 
-.about-card-value {
-  color: #d4d4d8;
-  font-size: 13px;
-  text-align: right;
+.about-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: #1e1e2e;
 }
 
-.about-card-link {
-  color: #a855f7;
-  font-size: 13px;
-  text-decoration: none;
-  text-align: right;
+/* Features grid */
+.about-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 32px 24px;
 }
 
-.about-card-link:hover { text-decoration: underline; }
-
-.about-features {
+.about-feature-card {
   background: #111118;
+  border: 1px solid #1a1a28;
   border-radius: 12px;
-  margin-bottom: 28px;
-  padding: 18px 20px;
+  padding: 16px;
+  transition: border-color 0.2s, transform 0.15s;
 }
 
-.about-features-title {
-  color: #71717a;
+.about-feature-card:hover {
+  border-color: rgba(168,85,247,0.3);
+  transform: translateY(-2px);
+}
+
+.about-feature-icon { font-size: 22px; display: block; margin-bottom: 8px; }
+.about-feature-title { color: #e4e4e7; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.about-feature-desc  { color: #52525b; font-size: 11px; line-height: 1.4; }
+
+/* Tech stack */
+.about-tech {
+  margin: 0 32px 24px;
+}
+
+.about-tech-title {
+  color: #52525b;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   text-transform: uppercase;
 }
 
-.about-features-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.about-tech-pills {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.about-features-list li {
+.about-tech-pill {
+  background: #16162a;
+  border: 1px solid #2e2e3e;
+  border-radius: 8px;
   color: #a1a1aa;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
 }
 
 .about-footer {
   color: #3f3f46;
   font-size: 12px;
   text-align: center;
-  padding-top: 8px;
+  padding: 8px 32px 32px;
 }
 
 /* ── Responsive — Mobile styles (applied via .is-mobile class) ───────────── */
@@ -1113,8 +1216,12 @@
   .app.is-mobile .harish-list-head { display: none; }
   .app.is-mobile .harish-row { grid-template-columns: 28px 38px 1fr; gap: 8px; }
   .app.is-mobile .harish-artist { display: none; }
-  .app.is-mobile .lyrics-section { padding: 20px 16px; }
-  .app.is-mobile .about-section  { padding: 20px 16px; }
+  .app.is-mobile .about-section .about-hero         { padding: 36px 20px 28px; }
+  .app.is-mobile .about-section .about-dev-card     { margin: 16px; padding: 16px; }
+  .app.is-mobile .about-section .about-stats        { margin: 0 16px 16px; }
+  .app.is-mobile .about-section .about-features-grid{ margin: 0 16px 16px; grid-template-columns: 1fr 1fr; }
+  .app.is-mobile .about-section .about-tech         { margin: 0 16px 16px; }
+  .app.is-mobile .about-section .about-footer       { padding: 8px 16px 24px; }
   .app.is-mobile .lyrics-track-title { font-size: 15px; }
   .app.is-mobile .lyrics-body { font-size: 14px; line-height: 1.8; }
   .app.is-mobile .album-art { max-width: 220px; }
