@@ -38,7 +38,12 @@ const TELUGU_QUERIES = [
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function HarishMusicHub() {
   // Navigation
-  const [section, setSection]       = useState("home"); // home | search | harish
+  const [section, setSection]       = useState("home"); // home | search | harish | lyrics
+
+  // Lyrics
+  const [lyrics, setLyrics]         = useState("");
+  const [lyricsLoading, setLyricsLoading] = useState(false);
+  const [lyricsError, setLyricsError]     = useState("");
 
   // Player state
   const [tracks, setTracks]         = useState([]);
@@ -213,6 +218,34 @@ export default function HarishMusicHub() {
     if (e.key === "Enter") { searchTracks(); setSection("search"); }
   }
 
+  // ── Lyrics ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (section !== "lyrics" || !currentTrack) return;
+    const title  = fmt(currentTrack.snippet.title);
+    const artist = currentTrack.snippet.channelTitle;
+
+    // Strip common noise from YouTube titles: (Official Video), [HD], ft. xyz etc.
+    const cleanTitle = title
+      .replace(/\(.*?\)/g, "")
+      .replace(/\[.*?\]/g, "")
+      .replace(/ft\..*$/i, "")
+      .replace(/feat\..*$/i, "")
+      .trim();
+
+    setLyrics("");
+    setLyricsError("");
+    setLyricsLoading(true);
+
+    fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(cleanTitle)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.lyrics) setLyrics(data.lyrics);
+        else setLyricsError("Lyrics not found for this track.");
+      })
+      .catch(() => setLyricsError("Could not fetch lyrics. Try again later."))
+      .finally(() => setLyricsLoading(false));
+  }, [section, currentTrack]);
+
   // ── Harish Rocks — load Telugu songs ─────────────────────────────────────
   useEffect(() => {
     if (section !== "harish" || harishTracks.length > 0) return;
@@ -278,6 +311,16 @@ export default function HarishMusicHub() {
               <span className="nav-icon">🎶</span>
               <span>Harish Rocks</span>
               <span className="nav-badge">Telugu</span>
+            </button>
+          </li>
+          <li>
+            <button
+              className={`nav-btn ${section === "lyrics" ? "active" : ""}`}
+              onClick={() => setSection("lyrics")}
+              disabled={!currentTrack}
+              title={!currentTrack ? "Play a track first" : ""}
+            >
+              <span className="nav-icon">📝</span> Lyrics
             </button>
           </li>
         </ul>
@@ -459,6 +502,33 @@ export default function HarishMusicHub() {
                   );
                 })}
               </div>
+            )}
+          </div>
+        )}
+        {/* LYRICS */}
+        {section === "lyrics" && (
+          <div className="lyrics-section">
+            {!currentTrack ? (
+              <div className="lyrics-empty">
+                <div className="lyrics-empty-icon">📝</div>
+                <p>Play a track first to see its lyrics</p>
+              </div>
+            ) : (
+              <>
+                <div className="lyrics-header">
+                  <img src={getBestThumb(currentTrack.snippet.thumbnails)} alt="" className="lyrics-art" />
+                  <div>
+                    <div className="lyrics-track-title">{fmt(currentTrack.snippet.title)}</div>
+                    <div className="lyrics-track-artist">{currentTrack.snippet.channelTitle}</div>
+                  </div>
+                </div>
+
+                {lyricsLoading && <div className="lyrics-loading">Fetching lyrics…</div>}
+                {lyricsError   && <div className="lyrics-error">{lyricsError}</div>}
+                {lyrics && (
+                  <pre className="lyrics-body">{lyrics}</pre>
+                )}
+              </>
             )}
           </div>
         )}
