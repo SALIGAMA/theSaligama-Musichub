@@ -595,6 +595,29 @@ export default function HarishMusicHub() {
           />
         </div>
       </footer>
+      {/* ── Mobile bottom nav ── */}
+      <nav className="mobile-nav">
+        <button className={`mobile-nav-btn ${section === "home" ? "active" : ""}`} onClick={() => setSection("home")}>
+          <span className="mobile-nav-icon">⌂</span>
+          Home
+        </button>
+        <button className={`mobile-nav-btn ${section === "search" ? "active" : ""}`} onClick={() => setSection("search")}>
+          <span className="mobile-nav-icon">⌕</span>
+          Search
+        </button>
+        <button className={`mobile-nav-btn ${section === "harish" ? "active" : ""}`} onClick={() => setSection("harish")}>
+          <span className="mobile-nav-icon">🎶</span>
+          HR
+        </button>
+        <button
+          className={`mobile-nav-btn ${section === "lyrics" ? "active" : ""}`}
+          onClick={() => setSection("lyrics")}
+          disabled={!currentTrack}
+        >
+          <span className="mobile-nav-icon">📝</span>
+          Lyrics
+        </button>
+      </nav>
     </div>
   );
 }

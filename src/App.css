@@ -806,24 +806,150 @@
   word-break: break-word;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
+/* ── Mobile bottom nav ───────────────────────────────────────────────────── */
+.mobile-nav {
+  display: none;
+}
+
+/* ── Responsive — Tablet (768px–1024px) ─────────────────────────────────── */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .app {
+    grid-template-columns: 72px 1fr;
+  }
+
+  /* Collapse sidebar to icon-only */
+  .nav-logo-text,
+  .nav-links li span:not(.nav-icon),
+  .nav-badge,
+  .queue-label,
+  .queue { display: none; }
+
+  .nav-logo {
+    justify-content: center;
+    padding: 20px 0;
+  }
+
+  .nav-logo-icon { font-size: 26px; }
+
+  .nav-links { padding: 8px 6px 0; }
+
+  .nav-btn {
+    justify-content: center;
+    padding: 10px 0;
+    border-radius: 10px;
+  }
+
+  .nav-icon { font-size: 20px; width: auto; }
+
+  .home-section,
+  .search-section { padding: 24px 28px; }
+
+  .harish-banner  { padding: 24px 28px; }
+  .harish-list    { padding: 0 28px 24px; }
+  .lyrics-section { padding: 28px; }
+
+  .player-bar { grid-template-columns: 1fr 1.4fr 0.6fr; }
+}
+
+/* ── Responsive — Mobile (≤768px) ───────────────────────────────────────── */
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 90px;
+    grid-template-rows: 1fr 72px 56px;
     grid-template-areas:
       "main"
-      "player";
+      "player"
+      "mobile-nav";
   }
 
+  /* Hide desktop sidebar */
   .nav { display: none; }
 
-  .home-section,
-  .search-section { padding: 20px; }
+  /* Show mobile bottom nav */
+  .mobile-nav {
+    display: flex;
+    grid-area: mobile-nav;
+    background: #0d0d14;
+    border-top: 1px solid #1a1a28;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
 
-  .harish-banner { padding: 20px; min-height: 120px; }
-  .harish-list   { padding: 0 16px 16px; }
+  .mobile-nav-btn {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: #52525b;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    gap: 3px;
+    padding: 6px 12px;
+    transition: color 0.15s;
+  }
 
-  .player-bar { grid-template-columns: 1fr auto; }
+  .mobile-nav-btn.active { color: #a855f7; }
+  .mobile-nav-btn:disabled { color: #3f3f46; cursor: not-allowed; }
+
+  .mobile-nav-icon { font-size: 20px; line-height: 1; }
+
+  /* Player bar — compact on mobile */
+  .player-bar {
+    grid-template-columns: 1fr auto;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .player-centre { gap: 4px; }
+
   .player-right { display: none; }
+
+  .progress-row .time-label { display: none; }
+
+  /* Main sections */
+  .home-section   { padding: 20px 16px; }
+  .search-section { padding: 20px 16px; }
+
+  .home-greeting { font-size: 20px; margin-bottom: 18px; }
+
+  .search-hero { flex-direction: column; gap: 8px; max-width: 100%; }
+  .search-input-hero,
+  .search-btn-hero { width: 100%; border-radius: 10px; }
+
+  .home-cards { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-card  { padding: 12px; gap: 10px; }
+  .home-card-icon { font-size: 22px; }
+  .home-card-title { font-size: 12px; }
+  .home-card-sub   { font-size: 11px; }
+
+  .search-bar-row { flex-direction: column; gap: 8px; }
+  .search-input-main,
+  .search-btn-main { width: 100%; }
+
+  .results-grid { gap: 2px; }
+  .result-card  { padding: 7px 8px; }
+  .result-thumb { width: 38px; height: 38px; }
+  .result-title { font-size: 13px; }
+
+  .harish-banner      { padding: 20px 16px; min-height: 110px; }
+  .harish-banner-text h1 { font-size: 24px; }
+  .harish-list        { padding: 0 12px 16px; }
+
+  .harish-list-head { display: none; }
+  .harish-row {
+    grid-template-columns: 28px 38px 1fr;
+    gap: 8px;
+  }
+  /* Hide artist column on mobile */
+  .harish-artist { display: none; }
+
+  .lyrics-section { padding: 20px 16px; }
+  .lyrics-track-title { font-size: 15px; }
+  .lyrics-body { font-size: 14px; line-height: 1.8; }
+
+  /* Album art on mobile — smaller */
+  .album-art { max-width: 220px; }
 }
