@@ -595,6 +595,11 @@ export default function HarishMusicHub() {
           />
         </div>
       </footer>
+      {/* Debug — remove after testing */}
+      <div style={{position:"fixed",top:0,right:0,background:"red",color:"#fff",fontSize:"12px",padding:"4px 8px",zIndex:9999}}>
+        w:{window.innerWidth}
+      </div>
+
       {/* ── Mobile bottom nav ── */}
       <nav className="mobile-nav">
         <button className={`mobile-nav-btn ${section === "home" ? "active" : ""}`} onClick={() => setSection("home")}>
