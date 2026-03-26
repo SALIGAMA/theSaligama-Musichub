@@ -6,6 +6,8 @@
   grid-template-areas:
     "nav  main"
     "player player";
+  height: 100dvh;
+  /* Fallback for older browsers */
   height: 100vh;
   background: #0a0a0f;
   color: #e4e4e7;
@@ -858,11 +860,13 @@
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 72px 56px;
+    grid-template-rows: 1fr 72px 60px;
     grid-template-areas:
       "main"
       "player"
       "mobile-nav";
+    height: 100dvh;
+    height: 100vh;
   }
 
   /* Hide desktop sidebar */
@@ -889,8 +893,11 @@
     flex-direction: column;
     font-size: 10px;
     gap: 3px;
+    min-height: 44px;
+    min-width: 44px;
     padding: 6px 12px;
     transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-nav-btn.active { color: #a855f7; }
