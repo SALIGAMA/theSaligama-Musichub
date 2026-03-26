@@ -218,6 +218,10 @@ export default function HarishMusicHub() {
     if (e.key === "Enter") { searchTracks(); setSection("search"); }
   }
 
+  // ── Derived (needed by lyrics effect below) ──────────────────────────────
+  const currentTrack = currentIdx !== null ? tracks[currentIdx] : null;
+  const progressPct  = duration > 0 ? (elapsed / duration) * 100 : 0;
+
   // ── Lyrics ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (section !== "lyrics" || !currentTrack) return;
@@ -265,10 +269,6 @@ export default function HarishMusicHub() {
     if (section === "search" && searchResults.length) setTracks(searchResults);
     if (section === "harish" && harishTracks.length)  setTracks(harishTracks);
   }, [section]);
-
-  // ── Derived ───────────────────────────────────────────────────────────────
-  const currentTrack  = currentIdx !== null ? tracks[currentIdx] : null;
-  const progressPct   = duration > 0 ? (elapsed / duration) * 100 : 0;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
