@@ -124,16 +124,15 @@
   align-items: center;
   background: #25d366;
   border: none;
-  border-radius: 20px;
+  border-radius: 50%;
   color: #fff;
   cursor: pointer;
   display: inline-flex;
-  font-size: 13px;
-  font-weight: 600;
-  gap: 6px;
-  padding: 7px 16px;
+  height: 34px;
+  justify-content: center;
   text-decoration: none;
   transition: background 0.2s;
+  width: 34px;
 }
 
 .share-btn-whatsapp:hover { background: #1ebe57; }
