@@ -2,12 +2,12 @@
 .app {
   display: grid;
   grid-template-columns: 260px 1fr;
-  grid-template-rows: 1fr 90px;
+  grid-template-rows: 1fr 90px 0px;
   grid-template-areas:
-    "nav  main"
-    "player player";
+    "nav    main"
+    "player player"
+    "mobile-nav mobile-nav";
   height: 100dvh;
-  /* Fallback for older browsers */
   height: 100vh;
   background: #0a0a0f;
   color: #e4e4e7;
@@ -860,7 +860,7 @@
 @media (max-width: 932px) {
   .app {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 72px 60px;
+    grid-template-rows: 1fr 72px 56px;
     grid-template-areas:
       "main"
       "player"
@@ -880,6 +880,7 @@
     align-items: center;
     justify-content: space-around;
     padding: 0 8px;
+    width: 100%;
   }
 
   .mobile-nav-btn {
