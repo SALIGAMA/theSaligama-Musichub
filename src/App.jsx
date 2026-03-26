@@ -320,7 +320,7 @@ export default function HarishMusicHub() {
         {/* HOME */}
         {section === "home" && (
           <div className="home-section">
-            <h1 className="home-greeting">Good {getTimeOfDay()}, Harish 👋</h1>
+            <h1 className="home-greeting">Hello, have a nice day champ! 🎵</h1>
 
             <div className="search-hero">
               <input
@@ -527,11 +527,4 @@ export default function HarishMusicHub() {
       </footer>
     </div>
   );
-}
-
-function getTimeOfDay() {
-  const h = new Date().getHours();
-  if (h < 12) return "morning";
-  if (h < 17) return "afternoon";
-  return "evening";
 }
