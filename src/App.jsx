@@ -227,7 +227,23 @@ export default function HarishMusicHub() {
     if (e.key === "Enter") { searchTracks(); setSection("search"); }
   }
 
-  // ── Derived (needed by lyrics effect below) ──────────────────────────────
+  // ── Share ─────────────────────────────────────────────────────────────────
+  const [shareCopied, setShareCopied] = useState(false);
+
+  async function handleShare() {
+    const shareData = {
+      title: "Harish MusicHub",
+      text: "Check out Harish MusicHub — listen to music & Telugu hits!",
+      url: "https://the-saligama-musichub.vercel.app",
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch {}
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  }
   const currentTrack = currentIdx !== null ? tracks[currentIdx] : null;
   const progressPct  = duration > 0 ? (elapsed / duration) * 100 : 0;
 
@@ -293,6 +309,9 @@ export default function HarishMusicHub() {
             <span className="nav-logo-name">Harish</span>
             <span className="nav-logo-sub">MusicHub</span>
           </div>
+          <button className="share-btn" onClick={handleShare} title="Share app">
+            ↗
+          </button>
         </div>
 
         <ul className="nav-links">
@@ -373,6 +392,9 @@ export default function HarishMusicHub() {
         {section === "home" && (
           <div className="home-section">
             <h1 className="home-greeting">Hello, have a nice day champ! 🎵</h1>
+            <button className="share-btn-home" onClick={handleShare}>
+              {shareCopied ? "✓ Link Copied!" : "↗ Share App"}
+            </button>
 
             <div className="search-hero">
               <input

@@ -77,6 +77,42 @@
   letter-spacing: 0.5px;
 }
 
+/* ── Share buttons ───────────────────────────────────────────────────────── */
+.share-btn {
+  align-items: center;
+  background: #1c1c2e;
+  border: 1px solid #2e2e3e;
+  border-radius: 8px;
+  color: #a855f7;
+  cursor: pointer;
+  display: flex;
+  font-size: 16px;
+  height: 30px;
+  justify-content: center;
+  margin-left: auto;
+  transition: background 0.15s, color 0.15s;
+  width: 30px;
+}
+
+.share-btn:hover { background: #2a1a4e; color: #c084fc; }
+
+.share-btn-home {
+  align-items: center;
+  background: transparent;
+  border: 1px solid #3f3f46;
+  border-radius: 20px;
+  color: #a1a1aa;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  gap: 6px;
+  margin-bottom: 24px;
+  padding: 7px 16px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.share-btn-home:hover { border-color: #a855f7; color: #a855f7; }
+
 /* Nav links */
 .nav-links {
   list-style: none;
