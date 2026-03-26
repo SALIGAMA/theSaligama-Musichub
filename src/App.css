@@ -113,6 +113,31 @@
 
 .share-btn-home:hover { border-color: #a855f7; color: #a855f7; }
 
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.share-btn-whatsapp {
+  align-items: center;
+  background: #25d366;
+  border: none;
+  border-radius: 20px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+  padding: 7px 16px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.share-btn-whatsapp:hover { background: #1ebe57; }
+
 /* Nav links */
 .nav-links {
   list-style: none;
