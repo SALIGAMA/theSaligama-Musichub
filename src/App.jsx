@@ -351,6 +351,14 @@ export default function HarishMusicHub() {
               <span className="nav-icon">📝</span> Lyrics
             </button>
           </li>
+          <li>
+            <button
+              className={`nav-btn ${section === "about" ? "active" : ""}`}
+              onClick={() => setSection("about")}
+            >
+              <span className="nav-icon">ℹ</span> About
+            </button>
+          </li>
         </ul>
 
         {/* Queue in sidebar */}
@@ -574,6 +582,64 @@ export default function HarishMusicHub() {
             )}
           </div>
         )}
+        {/* ABOUT */}
+        {section === "about" && (
+          <div className="about-section">
+            <div className="about-hero">
+              <div className="about-app-icon">♪</div>
+              <h1 className="about-app-name">Harish MusicHub</h1>
+              <span className="about-version">v1.0.0</span>
+              <p className="about-tagline">Built with ❤️ for Telugu music lovers</p>
+            </div>
+
+            <div className="about-cards">
+              <div className="about-card">
+                <div className="about-card-label">Developer</div>
+                <div className="about-card-value">Harish Saligama</div>
+              </div>
+              <div className="about-card">
+                <div className="about-card-label">GitHub</div>
+                <a
+                  className="about-card-link"
+                  href="https://github.com/SALIGAMA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  github.com/SALIGAMA ↗
+                </a>
+              </div>
+              <div className="about-card">
+                <div className="about-card-label">Version</div>
+                <div className="about-card-value">1.0.0 — March 2026</div>
+              </div>
+              <div className="about-card">
+                <div className="about-card-label">Built with</div>
+                <div className="about-card-value">React · Vite · YouTube API · lyrics.ovh</div>
+              </div>
+              <div className="about-card">
+                <div className="about-card-label">Deployed on</div>
+                <div className="about-card-value">Vercel</div>
+              </div>
+            </div>
+
+            <div className="about-features">
+              <div className="about-features-title">Features</div>
+              <ul className="about-features-list">
+                <li>🎵 Search any song worldwide</li>
+                <li>🎶 Harish Rocks — Telugu hits section</li>
+                <li>📝 Live lyrics fetching</li>
+                <li>⏮ Play / Pause / Next / Previous</li>
+                <li>🔊 Volume control & seek bar</li>
+                <li>📱 Works on mobile, tablet & desktop</li>
+                <li>↗ Share with friends via WhatsApp</li>
+              </ul>
+            </div>
+
+            <div className="about-footer">
+              Made with passion by Harish Saligama
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ── Player bar ── */}
@@ -658,6 +724,10 @@ export default function HarishMusicHub() {
         >
           <span className="mobile-nav-icon">📝</span>
           Lyrics
+        </button>
+        <button className={`mobile-nav-btn ${section === "about" ? "active" : ""}`} onClick={() => setSection("about")}>
+          <span className="mobile-nav-icon">ℹ</span>
+          About
         </button>
       </nav>
     </div>
