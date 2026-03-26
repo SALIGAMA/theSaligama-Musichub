@@ -13,6 +13,12 @@
   overflow: hidden;
 }
 
+/* Mobile nav hidden by default on desktop */
+.mobile-nav {
+  display: none;
+  grid-area: mobile-nav;
+}
+
 /* ── Left Nav ────────────────────────────────────────────────────────────── */
 .nav {
   grid-area: nav;
@@ -807,9 +813,6 @@
 }
 
 /* ── Mobile bottom nav ───────────────────────────────────────────────────── */
-.mobile-nav {
-  display: none;
-}
 
 /* ── Responsive — Tablet (768px–1024px) ─────────────────────────────────── */
 @media (max-width: 1024px) and (min-width: 769px) {
@@ -868,7 +871,6 @@
   /* Show mobile bottom nav */
   .mobile-nav {
     display: flex;
-    grid-area: mobile-nav;
     background: #0d0d14;
     border-top: 1px solid #1a1a28;
     align-items: center;
