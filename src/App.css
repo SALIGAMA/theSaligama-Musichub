@@ -816,8 +816,8 @@
 
 /* ── Mobile bottom nav ───────────────────────────────────────────────────── */
 
-/* ── Responsive — Tablet (768px–1024px) ─────────────────────────────────── */
-@media (max-width: 1024px) and (min-width: 769px) {
+/* ── Responsive — Tablet (932px–1024px) ─────────────────────────────────── */
+@media (max-width: 1024px) and (min-width: 933px) {
   .app {
     grid-template-columns: 72px 1fr;
   }
@@ -856,8 +856,8 @@
   .player-bar { grid-template-columns: 1fr 1.4fr 0.6fr; }
 }
 
-/* ── Responsive — Mobile (≤768px) ───────────────────────────────────────── */
-@media (max-width: 768px) {
+/* ── Responsive — Mobile (≤932px) ───────────────────────────────────────── */
+@media (max-width: 932px) {
   .app {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 72px 60px;
