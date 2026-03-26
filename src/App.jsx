@@ -40,6 +40,15 @@ export default function HarishMusicHub() {
   // Navigation
   const [section, setSection]       = useState("home"); // home | search | harish | lyrics
 
+  // Detect mobile via JS (reliable on all Android/iOS)
+  const [isMobile, setIsMobile]     = useState(window.innerWidth <= 932);
+
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth <= 932); }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   // Lyrics
   const [lyrics, setLyrics]         = useState("");
   const [lyricsLoading, setLyricsLoading] = useState(false);
@@ -272,12 +281,12 @@ export default function HarishMusicHub() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="app">
+    <div className={`app ${isMobile ? "is-mobile" : "is-desktop"}`}>
       {/* Hidden audio player */}
       <div ref={containerRef} style={{ display: "none" }} />
 
-      {/* ── Left nav ── */}
-      <nav className="nav">
+      {/* ── Left nav — desktop only ── */}
+      {!isMobile && <nav className="nav">
         <div className="nav-logo">
           <span className="nav-logo-icon">♪</span>
           <div className="nav-logo-text">
@@ -355,7 +364,7 @@ export default function HarishMusicHub() {
             );
           })}
         </ul>
-      </nav>
+      </nav>}
 
       {/* ── Main content ── */}
       <main className="main">
