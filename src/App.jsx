@@ -135,6 +135,39 @@ export default function HarishMusicHub() {
 
   useEffect(() => () => stopTick(), []);
 
+  // ── Keep playing when screen locks (visibilitychange) ────────────────────
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === "hidden") return; // screen locked — do nothing, let player continue
+      // Screen came back — if we were playing before lock, resume
+      if (isPlaying && playerRef.current?.getPlayerState) {
+        const state = playerRef.current.getPlayerState();
+        // 2 = PAUSED, resume it
+        if (state === 2) playerRef.current.playVideo();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [isPlaying]);
+
+  // ── Media Session API (lock-screen controls & OS audio focus) ───────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    if (!currentTrack) return;
+    const title  = fmt(currentTrack.snippet.title);
+    const artist = currentTrack.snippet.channelTitle;
+    const thumb  = getBestThumb(currentTrack.snippet.thumbnails);
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title,
+      artist,
+      artwork: thumb ? [{ src: thumb, sizes: "512x512", type: "image/jpeg" }] : [],
+    });
+    navigator.mediaSession.setActionHandler("play",     () => playerRef.current?.playVideo());
+    navigator.mediaSession.setActionHandler("pause",    () => playerRef.current?.pauseVideo());
+    navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
+    navigator.mediaSession.setActionHandler("nexttrack",     () => playNext());
+  }, [currentTrack, playPrev, playNext]);
+
   // ── Seek ──────────────────────────────────────────────────────────────────
   function handleSeek(e) {
     if (!playerRef.current || !duration) return;
