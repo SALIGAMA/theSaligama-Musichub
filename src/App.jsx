@@ -254,18 +254,17 @@ export default function HarishMusicHub() {
     if (!val.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
     suggestDebounceRef.current = setTimeout(async () => {
       try {
-        // Use YouTube autocomplete endpoint via allorigins CORS proxy
-        const url = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(val)}`)}`;
-        const res = await fetch(url);
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(val)}&type=video&videoCategoryId=10&maxResults=6&key=${API_KEY}`
+        );
         const data = await res.json();
-        const parsed = JSON.parse(data.contents);
-        const items = (parsed[1] || []).slice(0, 6).map((s) => s[0]);
+        const items = (data.items || []).map((item) => fmt(item.snippet.title));
         setSuggestions(items);
         setShowSuggestions(items.length > 0);
       } catch {
         setSuggestions([]);
       }
-    }, 350);
+    }, 400);
   }
 
   function handleSuggestionClick(s) {
