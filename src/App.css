@@ -1374,3 +1374,21 @@
 
 .app.is-mobile .ai-section { padding: 16px; }
 .app.is-mobile .chat-bubble { max-width: 92%; }
+
+/* ── Search clear button ── */
+.search-clear-btn {
+  position: absolute;
+  right: 110px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.search-clear-btn:hover { color: #fff; }
+.app.is-mobile .search-clear-btn { right: 90px; }
