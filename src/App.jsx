@@ -35,109 +35,171 @@ const TELUGU_QUERIES = [
   "Samajavaragamana Telugu song",
 ];
 
+// Tiny silent mp3 (0.1s) as a data URI — keeps OS audio session alive
+const SILENT_MP3 = "data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function HarishMusicHub() {
-  // Navigation
   const [section, setSection]       = useState("home");
-
-  // Detect mobile
   const [isMobile, setIsMobile]     = useState(window.innerWidth <= 932);
+
   useEffect(() => {
     function onResize() { setIsMobile(window.innerWidth <= 932); }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Lyrics
   const [lyrics, setLyrics]         = useState("");
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [lyricsError, setLyricsError]     = useState("");
 
-  // Player state
   const [tracks, setTracks]         = useState([]);
   const [currentIdx, setCurrentIdx] = useState(null);
   const [isPlaying, setIsPlaying]   = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
   const [duration, setDuration]     = useState(0);
   const [elapsed, setElapsed]       = useState(0);
   const [volume, setVolume]         = useState(80);
   const [isMuted, setIsMuted]       = useState(false);
-  const [streamLoading, setStreamLoading] = useState(false);
 
-  // Search state
   const [query, setQuery]           = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
 
-  // Harish Rocks section
   const [harishTracks, setHarishTracks]   = useState([]);
   const [harishLoading, setHarishLoading] = useState(false);
 
-  // Refs
-  const audioRef       = useRef(null);
+  const playerRef      = useRef(null);
+  const containerRef   = useRef(null);
+  const silentAudioRef = useRef(null);
   const progressRef    = useRef(null);
+  const tickRef        = useRef(null);
   const currentIdxRef  = useRef(currentIdx);
   const tracksRef      = useRef(tracks);
 
   useEffect(() => { currentIdxRef.current = currentIdx; }, [currentIdx]);
   useEffect(() => { tracksRef.current = tracks; }, [tracks]);
 
-  // ── Native audio element setup ────────────────────────────────────────────
+  // ── YouTube IFrame API ────────────────────────────────────────────────────
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.volume = volume / 100;
-
-    function onTimeUpdate() {
-      setElapsed(audio.currentTime);
-      setDuration(audio.duration || 0);
-    }
-    function onPlay()  { setIsPlaying(true); }
-    function onPause() { setIsPlaying(false); }
-    function onEnded() { playNext(); }
-
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("play",  onPlay);
-    audio.addEventListener("pause", onPause);
-    audio.addEventListener("ended", onEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("play",  onPlay);
-      audio.removeEventListener("pause", onPause);
-      audio.removeEventListener("ended", onEnded);
-    };
+    if (window.YT?.Player) { initPlayer(); return; }
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+    window.onYouTubeIframeAPIReady = initPlayer;
   }, []);
 
-  // ── Play track — point <audio> directly at the proxy endpoint ───────────
-  const playTrack = useCallback(async (idx) => {
-    const list = tracksRef.current;
-    if (!list[idx]) return;
-    const videoId = list[idx].id.videoId;
+  function initPlayer() {
+    if (playerRef.current) return;
+    playerRef.current = new window.YT.Player(containerRef.current, {
+      height: "0", width: "0",
+      playerVars: { autoplay: 1, controls: 0, disablekb: 1 },
+      events: {
+        onReady: (e) => {
+          setPlayerReady(true);
+          e.target.setVolume(80);
+        },
+        onStateChange: (e) => {
+          const YT = window.YT.PlayerState;
+          if (e.data === YT.PLAYING) {
+            setIsPlaying(true);
+            setDuration(playerRef.current.getDuration());
+            startTick();
+            // Start silent audio to keep OS audio session alive
+            silentAudioRef.current?.play().catch(() => {});
+          }
+          if (e.data === YT.PAUSED)  { setIsPlaying(false); stopTick(); }
+          if (e.data === YT.ENDED)   { stopTick(); playNext(); }
+        },
+      },
+    });
+  }
 
+  // ── Progress ticker ───────────────────────────────────────────────────────
+  function startTick() {
+    stopTick();
+    tickRef.current = setInterval(() => {
+      if (playerRef.current?.getCurrentTime) {
+        setElapsed(playerRef.current.getCurrentTime());
+        setDuration(playerRef.current.getDuration());
+      }
+    }, 500);
+  }
+
+  function stopTick() { clearInterval(tickRef.current); }
+  useEffect(() => () => stopTick(), []);
+
+  // ── Resume playback if browser paused it on screen lock ──────────────────
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible" && isPlaying) {
+        const state = playerRef.current?.getPlayerState?.();
+        if (state === 2) playerRef.current.playVideo(); // 2 = PAUSED
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [isPlaying]);
+
+  // ── Media Session API (lock-screen controls) ──────────────────────────────
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || currentIdx === null) return;
+    const track = tracksRef.current[currentIdx];
+    if (!track) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title:  fmt(track.snippet.title),
+      artist: track.snippet.channelTitle,
+      artwork: [{ src: getBestThumb(track.snippet.thumbnails), sizes: "512x512", type: "image/jpeg" }],
+    });
+    navigator.mediaSession.setActionHandler("play",          () => playerRef.current?.playVideo());
+    navigator.mediaSession.setActionHandler("pause",         () => playerRef.current?.pauseVideo());
+    navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
+    navigator.mediaSession.setActionHandler("nexttrack",     () => playNext());
+  }, [currentIdx]);
+
+  // ── Seek ──────────────────────────────────────────────────────────────────
+  function handleSeek(e) {
+    if (!playerRef.current || !duration) return;
+    const rect  = progressRef.current.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    playerRef.current.seekTo(ratio * duration, true);
+    setElapsed(ratio * duration);
+  }
+
+  // ── Volume ────────────────────────────────────────────────────────────────
+  function handleVolume(e) {
+    const v = Number(e.target.value);
+    setVolume(v);
+    setIsMuted(v === 0);
+    playerRef.current?.setVolume(v);
+  }
+
+  function toggleMute() {
+    if (!playerRef.current) return;
+    if (isMuted) {
+      playerRef.current.unMute();
+      playerRef.current.setVolume(volume || 80);
+      setIsMuted(false);
+    } else {
+      playerRef.current.mute();
+      setIsMuted(true);
+    }
+  }
+
+  // ── Playback ──────────────────────────────────────────────────────────────
+  const playTrack = useCallback((idx) => {
+    if (!playerRef.current || !tracksRef.current[idx]) return;
+    playerRef.current.loadVideoById(tracksRef.current[idx].id.videoId);
     setCurrentIdx(idx);
+    setIsPlaying(true);
     setElapsed(0);
     setDuration(0);
-    setStreamLoading(true);
-
-    try {
-      const audio = audioRef.current;
-      // /api/stream proxies the audio — browser keeps the connection alive through lock
-      audio.src = `/api/stream?id=${videoId}`;
-      audio.load();
-      await audio.play();
-    } catch (err) {
-      console.error("Stream error:", err);
-    } finally {
-      setStreamLoading(false);
-    }
   }, []);
 
   const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    isPlaying ? audio.pause() : audio.play();
+    if (!playerRef.current) return;
+    isPlaying ? playerRef.current.pauseVideo() : playerRef.current.playVideo();
   }, [isPlaying]);
 
   const playNext = useCallback(() => {
@@ -153,53 +215,6 @@ export default function HarishMusicHub() {
     if (idx === null || !list.length) return;
     playTrack((idx - 1 + list.length) % list.length);
   }, [playTrack]);
-
-  // ── Media Session API (lock-screen controls) ──────────────────────────────
-  useEffect(() => {
-    if (!("mediaSession" in navigator) || !currentIdx === null) return;
-    const track = tracksRef.current[currentIdx];
-    if (!track) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title:  fmt(track.snippet.title),
-      artist: track.snippet.channelTitle,
-      artwork: [{ src: getBestThumb(track.snippet.thumbnails), sizes: "512x512", type: "image/jpeg" }],
-    });
-    navigator.mediaSession.setActionHandler("play",          () => audioRef.current?.play());
-    navigator.mediaSession.setActionHandler("pause",         () => audioRef.current?.pause());
-    navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
-    navigator.mediaSession.setActionHandler("nexttrack",     () => playNext());
-  }, [currentIdx, playPrev, playNext]);
-
-  // ── Seek ──────────────────────────────────────────────────────────────────
-  function handleSeek(e) {
-    const audio = audioRef.current;
-    if (!audio || !duration) return;
-    const rect  = progressRef.current.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = ratio * duration;
-    setElapsed(audio.currentTime);
-  }
-
-  // ── Volume ────────────────────────────────────────────────────────────────
-  function handleVolume(e) {
-    const v = Number(e.target.value);
-    setVolume(v);
-    setIsMuted(v === 0);
-    if (audioRef.current) audioRef.current.volume = v / 100;
-  }
-
-  function toggleMute() {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isMuted) {
-      audio.muted = false;
-      audio.volume = (volume || 80) / 100;
-      setIsMuted(false);
-    } else {
-      audio.muted = true;
-      setIsMuted(true);
-    }
-  }
 
   // ── Search ────────────────────────────────────────────────────────────────
   async function fetchTracks(q, opts = {}) {
@@ -218,11 +233,7 @@ export default function HarishMusicHub() {
     try {
       const items = await fetchTracks(query + " audio");
       if (!items.length) { setError("No results found."); setSearchResults([]); }
-      else {
-        setSearchResults(items);
-        setTracks(items);
-        setCurrentIdx(null);
-      }
+      else { setSearchResults(items); setTracks(items); setCurrentIdx(null); }
     } catch {
       setError("Search failed. Check API key or connection.");
     } finally {
@@ -261,20 +272,12 @@ export default function HarishMusicHub() {
     const title  = fmt(currentTrack.snippet.title);
     const artist = currentTrack.snippet.channelTitle;
     const cleanTitle = title
-      .replace(/\(.*?\)/g, "")
-      .replace(/\[.*?\]/g, "")
-      .replace(/ft\..*$/i, "")
-      .replace(/feat\..*$/i, "")
-      .trim();
-    setLyrics("");
-    setLyricsError("");
-    setLyricsLoading(true);
+      .replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "")
+      .replace(/ft\..*$/i, "").replace(/feat\..*$/i, "").trim();
+    setLyrics(""); setLyricsError(""); setLyricsLoading(true);
     fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(cleanTitle)}`)
       .then((r) => r.json())
-      .then((data) => {
-        if (data.lyrics) setLyrics(data.lyrics);
-        else setLyricsError("Lyrics not found for this track.");
-      })
+      .then((data) => { if (data.lyrics) setLyrics(data.lyrics); else setLyricsError("Lyrics not found for this track."); })
       .catch(() => setLyricsError("Could not fetch lyrics. Try again later."))
       .finally(() => setLyricsLoading(false));
   }, [section, currentTrack]);
@@ -298,8 +301,16 @@ export default function HarishMusicHub() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className={`app ${isMobile ? "is-mobile" : "is-desktop"}`}>
-      {/* Native hidden audio element — gets proper OS background audio */}
-      <audio ref={audioRef} style={{ display: "none" }} />
+      {/* Hidden YouTube player */}
+      <div ref={containerRef} style={{ display: "none" }} />
+
+      {/* Silent looping audio — keeps OS audio session alive so YouTube keeps playing on lock */}
+      <audio
+        ref={silentAudioRef}
+        src={SILENT_MP3}
+        loop
+        style={{ display: "none" }}
+      />
 
       {/* ── Left nav — desktop only ── */}
       {!isMobile && <nav className="nav">
@@ -332,11 +343,8 @@ export default function HarishMusicHub() {
           {section === "harish" ? "Telugu Hits" : "Queue"}
           {tracks.length > 0 && <span className="queue-count">{tracks.length}</span>}
         </div>
-
         <ul className="queue">
-          {tracks.length === 0 && (
-            <li className="queue-empty">{section === "harish" ? "Loading Telugu hits…" : "Search to fill the queue"}</li>
-          )}
+          {tracks.length === 0 && <li className="queue-empty">{section === "harish" ? "Loading Telugu hits…" : "Search to fill the queue"}</li>}
           {tracks.map((track, idx) => {
             const active = idx === currentIdx;
             return (
@@ -361,16 +369,14 @@ export default function HarishMusicHub() {
             <h1 className="home-greeting">Hello, have a nice day champ! 🎵</h1>
             <div className="share-row">
               <button className="share-btn-home" onClick={handleShare}>{shareCopied ? "✓ Copied!" : "↗ Share"}</button>
-              <a className="share-btn-whatsapp" href="https://wa.me/?text=Check%20out%20Harish%20MusicHub%20%F0%9F%8E%B5%20https://the-saligama-musichub.vercel.app" target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
+              <a className="share-btn-whatsapp" href="https://wa.me/?text=Check%20out%20Harish%20MusicHub%20%F0%9F%8E%B5%20https://the-saligama-musichub.vercel.app" target="_blank" rel="noopener noreferrer">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.852L.057 23.569a.75.75 0 0 0 .921.921l5.717-1.475A11.952 11.952 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.716 9.716 0 0 1-4.953-1.356l-.355-.211-3.676.948.968-3.542-.232-.368A9.712 9.712 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/></svg>
               </a>
             </div>
-
             <div className="search-hero">
               <input className="search-input-hero" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder="What do you want to listen to?" />
               <button className="search-btn-hero" onClick={() => { searchTracks(); setSection("search"); }} disabled={loading}>{loading ? "Searching…" : "Search"}</button>
             </div>
-
             <div className="home-cards">
               <div className="home-card harish-card" onClick={() => setSection("harish")}>
                 <div className="home-card-icon">🎶</div>
@@ -381,7 +387,6 @@ export default function HarishMusicHub() {
                 <div><div className="home-card-title">Browse Music</div><div className="home-card-sub">Search any song</div></div>
               </div>
             </div>
-
             {currentTrack && (
               <div className="home-now-playing">
                 <img src={getBestThumb(currentTrack.snippet.thumbnails)} alt="" className="home-np-art" />
@@ -402,7 +407,6 @@ export default function HarishMusicHub() {
               <button className="search-btn-main" onClick={searchTracks} disabled={loading}>{loading ? "Searching…" : "Search"}</button>
             </div>
             {error && <p className="search-error">{error}</p>}
-
             {searchResults.length > 0 && (
               <>
                 <div className="results-header">Results for <em>"{query}"</em> — {searchResults.length} tracks</div>
@@ -420,7 +424,6 @@ export default function HarishMusicHub() {
                 </div>
               </>
             )}
-
             {searchResults.length === 0 && !loading && !error && (
               <div className="search-empty"><div className="search-empty-icon">⌕</div><p>Start typing to search for music</p></div>
             )}
@@ -554,12 +557,11 @@ export default function HarishMusicHub() {
             <span className="player-idle">No track selected</span>
           )}
         </div>
-
         <div className="player-centre">
           <div className="player-controls">
             <button className="ctrl-btn" onClick={playPrev} disabled={!currentTrack} title="Previous">⏮</button>
-            <button className="ctrl-btn play-pause" onClick={currentTrack ? togglePlay : undefined} disabled={!currentTrack || streamLoading} title={isPlaying ? "Pause" : "Play"}>
-              {streamLoading ? "⏳" : isPlaying ? "⏸" : "▶"}
+            <button className="ctrl-btn play-pause" onClick={currentTrack ? togglePlay : undefined} disabled={!currentTrack || !playerReady} title={isPlaying ? "Pause" : "Play"}>
+              {isPlaying ? "⏸" : "▶"}
             </button>
             <button className="ctrl-btn" onClick={playNext} disabled={!currentTrack} title="Next">⏭</button>
           </div>
@@ -572,7 +574,6 @@ export default function HarishMusicHub() {
             <span className="time-label">{formatTime(duration)}</span>
           </div>
         </div>
-
         <div className="player-right">
           <button className="ctrl-btn volume-icon" onClick={toggleMute} title="Mute">
             {isMuted || volume === 0 ? "🔇" : volume < 50 ? "🔉" : "🔊"}
