@@ -53,6 +53,14 @@ export default function HarishMusicHub() {
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const [lyricsError, setLyricsError]     = useState("");
 
+  // AI Chat state
+  const [chatMessages, setChatMessages] = useState([
+    { role: "ai", text: "Hi! Tell me what you want to listen to. Try something like \"I'm feeling happy\" or \"play something like Srivalli\" 🎵" }
+  ]);
+  const [chatInput, setChatInput]   = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef                  = useRef(null);
+
   const [tracks, setTracks]         = useState([]);
   const [currentIdx, setCurrentIdx] = useState(null);
   const [isPlaying, setIsPlaying]   = useState(false);
@@ -219,6 +227,47 @@ export default function HarishMusicHub() {
     playTrack((idx - 1 + list.length) % list.length);
   }, [playTrack]);
 
+  // ── AI Chat ───────────────────────────────────────────────────────────────
+  async function handleChatSend() {
+    const msg = chatInput.trim();
+    if (!msg || chatLoading) return;
+    setChatInput("");
+    setChatMessages((prev) => [...prev, { role: "user", text: msg }]);
+    setChatLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      setChatMessages((prev) => [...prev, { role: "ai", text: data.message }]);
+
+      // Search and play the AI-suggested query
+      const items = await fetchTracks(data.query + " audio");
+      if (items.length) {
+        setTracks(items);
+        setCurrentIdx(null);
+        playTrack(0);
+        setChatMessages((prev) => [
+          ...prev,
+          { role: "ai", text: `Playing: "${fmt(items[0].snippet.title)}" and ${items.length - 1} more tracks 🎵` },
+        ]);
+      }
+    } catch (err) {
+      setChatMessages((prev) => [...prev, { role: "ai", text: "Sorry, something went wrong. Try again!" }]);
+    } finally {
+      setChatLoading(false);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    }
+  }
+
+  function handleChatKeyDown(e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleChatSend(); }
+  }
+
   // ── Search ────────────────────────────────────────────────────────────────
   async function fetchTracks(q, opts = {}) {
     const res = await fetch(
@@ -372,6 +421,7 @@ export default function HarishMusicHub() {
             </button>
           </li>
           <li><button className={`nav-btn ${section === "about" ? "active" : ""}`} onClick={() => setSection("about")}><span className="nav-icon">ℹ</span> About</button></li>
+          <li><button className={`nav-btn ai-btn ${section === "ai" ? "active" : ""}`} onClick={() => setSection("ai")}><span className="nav-icon">🤖</span> AI Assistant</button></li>
         </ul>
 
         <div className="queue-label">
@@ -531,6 +581,46 @@ export default function HarishMusicHub() {
           </div>
         )}
 
+        {section === "ai" && (
+          <div className="ai-section">
+            <div className="ai-header">
+              <div className="ai-header-icon">🤖</div>
+              <div>
+                <div className="ai-header-title">AI Music Assistant</div>
+                <div className="ai-header-sub">Tell me what you want to listen to</div>
+              </div>
+            </div>
+            <div className="chat-messages">
+              {chatMessages.map((m, i) => (
+                <div key={i} className={`chat-bubble ${m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}`}>
+                  {m.role === "ai" && <span className="chat-avatar">🤖</span>}
+                  <span className="chat-text">{m.text}</span>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="chat-bubble chat-bubble-ai">
+                  <span className="chat-avatar">🤖</span>
+                  <span className="chat-typing"><span /><span /><span /></span>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+            <div className="chat-input-row">
+              <input
+                className="chat-input"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={handleChatKeyDown}
+                placeholder="e.g. I'm feeling happy, play gym songs, something like Srivalli…"
+                disabled={chatLoading}
+              />
+              <button className="chat-send-btn" onClick={handleChatSend} disabled={chatLoading || !chatInput.trim()}>
+                {chatLoading ? "⏳" : "➤"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {section === "about" && (
           <div className="about-section">
             <div className="about-hero">
@@ -642,6 +732,7 @@ export default function HarishMusicHub() {
         <button className={`mobile-nav-btn ${section === "harish" ? "active" : ""}`} onClick={() => setSection("harish")}><span className="mobile-nav-icon">🎶</span>HR</button>
         <button className={`mobile-nav-btn ${section === "lyrics" ? "active" : ""}`} onClick={() => setSection("lyrics")} disabled={!currentTrack}><span className="mobile-nav-icon">📝</span>Lyrics</button>
         <button className={`mobile-nav-btn ${section === "about"  ? "active" : ""}`} onClick={() => setSection("about")}><span className="mobile-nav-icon">ℹ</span>About</button>
+        <button className={`mobile-nav-btn ${section === "ai"  ? "active" : ""}`} onClick={() => setSection("ai")}><span className="mobile-nav-icon">🤖</span>AI</button>
       </nav>
     </div>
   );
