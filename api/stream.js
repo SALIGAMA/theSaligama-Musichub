@@ -1,4 +1,4 @@
-import ytdl from 'ytdl-core';
+import ytdl from '@distube/ytdl-core';
 
 export const config = {
   api: { responseLimit: false },
@@ -16,7 +16,6 @@ export default async function handler(req, res) {
     });
     if (!format) return res.status(404).json({ error: 'No audio format found' });
 
-    // Support range requests so the browser can seek
     const headers = {};
     if (req.headers.range) {
       headers['Range'] = req.headers.range;
@@ -36,7 +35,6 @@ export default async function handler(req, res) {
 
     res.status(upstream.status);
 
-    // Pipe the stream through to the browser
     const reader = upstream.body.getReader();
     const pump = async () => {
       while (true) {
