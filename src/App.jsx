@@ -498,6 +498,9 @@ export default function HarishMusicHub() {
           <div className="search-section">
             <div className="search-bar-row" style={{ position: "relative" }}>
               <input className="search-input-main" value={query} onChange={handleQueryChange} onKeyDown={handleKeyDown} placeholder="Search songs, artists, albums…" autoFocus autoComplete="off" />
+              {query && (
+                <button className="search-clear-btn" onClick={() => { setQuery(""); setSuggestions([]); setShowSuggestions(false); setSearchResults([]); setError(""); }} title="Clear">✕</button>
+              )}
               <button className="search-btn-main" onClick={() => searchTracks()} disabled={loading}>{loading ? "Searching…" : "Search"}</button>
               {showSuggestions && suggestions.length > 0 && (
                 <ul className="suggestions-dropdown">
