@@ -4,26 +4,23 @@ export default async function handler(req, res) {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: "Missing message" });
 
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a music assistant for a YouTube-based music app. 
-When the user describes what they want to listen to, respond with EXACTLY two things:
-1. A short friendly message (1 sentence)
-2. A YouTube search query to find that music
+  const apiKey = process.env.OPENAI_API_KEY;
 
-Always respond in this exact JSON format:
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `You are a music assistant for a YouTube-based music app.
+When the user describes what they want to listen to, respond with EXACTLY this JSON format:
 {
-  "message": "your friendly reply here",
+  "message": "your friendly reply here (1 sentence)",
   "query": "youtube search query here"
 }
 
@@ -32,20 +29,28 @@ Examples:
 - User: "gym time" → {"message": "Let's get pumped up!", "query": "gym workout motivation songs 2024"}
 - User: "something like Srivalli" → {"message": "You'll love these similar Telugu hits!", "query": "songs like Srivalli Telugu romantic"}
 - User: "play AR Rahman" → {"message": "AR Rahman's finest coming right up!", "query": "AR Rahman best songs"}
-Only return valid JSON, nothing else.`,
-          },
-          { role: "user", content: message },
-        ],
-        temperature: 0.7,
-        max_tokens: 150,
-      }),
-    });
+
+Only return valid JSON, nothing else.
+
+User message: ${message}`,
+                },
+              ],
+            },
+          ],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 150 },
+        }),
+      }
+    );
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "OpenAI error");
+    if (!response.ok) throw new Error(data.error?.message || "Gemini API error");
 
-    const raw = data.choices[0].message.content.trim();
-    const parsed = JSON.parse(raw);
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!raw) throw new Error("Empty response from Gemini");
+
+    // Strip markdown code fences if present
+    const cleaned = raw.replace(/^```json\n?|^```\n?|\n?```$/g, "").trim();
+    const parsed = JSON.parse(cleaned);
 
     res.status(200).json(parsed);
   } catch (err) {
