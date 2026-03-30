@@ -110,7 +110,7 @@ export default function HarishMusicHub() {
     };
   }, []);
 
-  // ── Fetch audio stream URL from /api/stream then play ────────────────────
+  // ── Play track — point <audio> directly at the proxy endpoint ───────────
   const playTrack = useCallback(async (idx) => {
     const list = tracksRef.current;
     if (!list[idx]) return;
@@ -122,12 +122,9 @@ export default function HarishMusicHub() {
     setStreamLoading(true);
 
     try {
-      const res = await fetch(`/api/stream?id=${videoId}`);
-      const data = await res.json();
-      if (!data.url) throw new Error("No stream URL");
-
       const audio = audioRef.current;
-      audio.src = data.url;
+      // /api/stream proxies the audio — browser keeps the connection alive through lock
+      audio.src = `/api/stream?id=${videoId}`;
       audio.load();
       await audio.play();
     } catch (err) {
