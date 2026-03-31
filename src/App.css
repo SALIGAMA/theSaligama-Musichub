@@ -1449,3 +1449,53 @@
 }
 .name-modal-btn:hover:not(:disabled) { opacity: 0.85; }
 .name-modal-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Voice features ── */
+.chat-mic-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, transform 0.1s;
+}
+.chat-mic-btn:hover { background: rgba(255,255,255,0.15); }
+.chat-mic-btn.listening {
+  background: rgba(239,68,68,0.3);
+  border-color: #ef4444;
+  animation: mic-pulse 1s infinite;
+}
+
+/* Floating voice command button */
+.voice-fab {
+  position: fixed;
+  bottom: 90px;
+  right: 16px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.5);
+  z-index: 50;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.voice-fab:hover { transform: scale(1.1); }
+.voice-fab.listening {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 4px 20px rgba(239,68,68,0.5);
+  animation: mic-pulse 1s infinite;
+}
+.app.is-desktop .voice-fab { bottom: 100px; right: 24px; }
+
+@keyframes mic-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.12); }
+}
