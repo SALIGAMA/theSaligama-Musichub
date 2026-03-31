@@ -1392,3 +1392,60 @@
 }
 .search-clear-btn:hover { color: #fff; }
 .app.is-mobile .search-clear-btn { right: 90px; }
+
+/* ── Name prompt modal ── */
+.name-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.name-modal {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.name-modal-icon  { font-size: 48px; }
+.name-modal-title { font-size: 20px; font-weight: 700; color: #fff; text-align: center; margin: 0; }
+.name-modal-sub   { font-size: 14px; color: #888; margin: 0; }
+.name-modal-input {
+  width: 100%;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.name-modal-input:focus { border-color: #7c3aed; }
+.name-modal-input::placeholder { color: #555; }
+.name-modal-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.name-modal-btn:hover:not(:disabled) { opacity: 0.85; }
+.name-modal-btn:disabled { opacity: 0.4; cursor: not-allowed; }
