@@ -106,6 +106,75 @@ export default function HarishMusicHub() {
   const [harishTracks, setHarishTracks]   = useState([]);
   const [harishLoading, setHarishLoading] = useState(false);
 
+  // Voice assistant state
+  const [isListening, setIsListening]     = useState(false);
+  const [voiceMode, setVoiceMode]         = useState(null); // 'chat' | 'command'
+  const recognitionRef                    = useRef(null);
+
+  // ── Speech synthesis (announce song) ─────────────────────────────────────
+  function speak(text) {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1; utter.pitch = 1; utter.volume = 1;
+    window.speechSynthesis.speak(utter);
+  }
+
+  // ── Speech recognition setup ──────────────────────────────────────────────
+  function startListening(mode) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert("Speech recognition not supported in this browser. Try Chrome."); return; }
+    if (recognitionRef.current) recognitionRef.current.abort();
+
+    const rec = new SR();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    recognitionRef.current = rec;
+    setVoiceMode(mode);
+    setIsListening(true);
+
+    rec.onresult = (e) => {
+      const transcript = e.results[0][0].transcript.trim();
+      setIsListening(false);
+      setVoiceMode(null);
+      if (mode === "chat") {
+        setChatInput(transcript);
+        setTimeout(() => handleChatSendWithText(transcript), 100);
+      } else if (mode === "command") {
+        handleVoiceCommand(transcript);
+      }
+    };
+    rec.onerror = () => { setIsListening(false); setVoiceMode(null); };
+    rec.onend   = () => { setIsListening(false); setVoiceMode(null); };
+    rec.start();
+  }
+
+  function stopListening() {
+    recognitionRef.current?.abort();
+    setIsListening(false);
+    setVoiceMode(null);
+  }
+
+  // ── Voice commands ────────────────────────────────────────────────────────
+  function handleVoiceCommand(text) {
+    const t = text.toLowerCase();
+    if (t.includes("next"))                        { playNext(); speak("Next song"); }
+    else if (t.includes("previous") || t.includes("prev") || t.includes("back")) { playPrev(); speak("Previous song"); }
+    else if (t.includes("pause") || t.includes("stop"))  { playerRef.current?.pauseVideo(); speak("Paused"); }
+    else if (t.includes("play") && !t.includes("play something") && !t.includes("play like")) {
+      playerRef.current?.playVideo(); speak("Playing");
+    }
+    else if (t.includes("volume up"))   { const v = Math.min(100, volume + 20); setVolume(v); playerRef.current?.setVolume(v); speak("Volume up"); }
+    else if (t.includes("volume down")) { const v = Math.max(0,   volume - 20); setVolume(v); playerRef.current?.setVolume(v); speak("Volume down"); }
+    else {
+      // Treat as AI music request
+      speak("Looking for music for you");
+      handleChatSendWithText(text);
+      setSection("ai");
+    }
+  }
+
   const playerRef      = useRef(null);
   const containerRef   = useRef(null);
   const silentAudioRef = useRef(null);
@@ -231,6 +300,11 @@ export default function HarishMusicHub() {
     setIsPlaying(true);
     setElapsed(0);
     setDuration(0);
+    // Announce song
+    const track = tracksRef.current[idx];
+    const title  = fmt(track.snippet.title).replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
+    const artist = track.snippet.channelTitle;
+    setTimeout(() => speak(`Now playing: ${title} by ${artist}`), 500);
   }, []);
 
   const togglePlay = useCallback(() => {
@@ -253,8 +327,7 @@ export default function HarishMusicHub() {
   }, [playTrack]);
 
   // ── AI Chat ───────────────────────────────────────────────────────────────
-  async function handleChatSend() {
-    const msg = chatInput.trim();
+  async function handleChatSendWithText(msg) {
     if (!msg || chatLoading) return;
     setChatInput("");
     setChatMessages((prev) => [...prev, { role: "user", text: msg }]);
@@ -267,18 +340,17 @@ export default function HarishMusicHub() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-
       setChatMessages((prev) => [...prev, { role: "ai", text: data.message }]);
-
-      // Search and play the AI-suggested query
+      speak(data.message);
       const items = await fetchTracks(data.query + " audio");
       if (items.length) {
         setTracks(items);
         setCurrentIdx(null);
         playTrack(0);
+        const trackTitle = fmt(items[0].snippet.title);
         setChatMessages((prev) => [
           ...prev,
-          { role: "ai", text: `Playing: "${fmt(items[0].snippet.title)}" and ${items.length - 1} more tracks 🎵` },
+          { role: "ai", text: `Playing: "${trackTitle}" and ${items.length - 1} more tracks 🎵` },
         ]);
       }
     } catch (err) {
@@ -287,6 +359,10 @@ export default function HarishMusicHub() {
       setChatLoading(false);
       setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     }
+  }
+
+  async function handleChatSend() {
+    handleChatSendWithText(chatInput.trim());
   }
 
   function handleChatKeyDown(e) {
@@ -642,6 +718,13 @@ export default function HarishMusicHub() {
                 placeholder="e.g. I'm feeling happy, play gym songs, something like Srivalli…"
                 disabled={chatLoading}
               />
+              <button
+                className={`chat-mic-btn ${isListening && voiceMode === "chat" ? "listening" : ""}`}
+                onClick={() => isListening ? stopListening() : startListening("chat")}
+                title="Speak to AI"
+              >
+                {isListening && voiceMode === "chat" ? "⏹" : "🎤"}
+              </button>
               <button className="chat-send-btn" onClick={handleChatSend} disabled={chatLoading || !chatInput.trim()}>
                 {chatLoading ? "⏳" : "➤"}
               </button>
@@ -762,6 +845,17 @@ export default function HarishMusicHub() {
         <button className={`mobile-nav-btn ${section === "about"  ? "active" : ""}`} onClick={() => setSection("about")}><span className="mobile-nav-icon">ℹ</span>About</button>
         <button className={`mobile-nav-btn ${section === "ai"  ? "active" : ""}`} onClick={() => setSection("ai")}><span className="mobile-nav-icon">🤖</span>AI</button>
       </nav>
+
+      {/* ── Floating voice command button ── */}
+      {!showNamePrompt && (
+        <button
+          className={`voice-fab ${isListening && voiceMode === "command" ? "listening" : ""}`}
+          onClick={() => isListening ? stopListening() : startListening("command")}
+          title="Voice command"
+        >
+          {isListening && voiceMode === "command" ? "⏹" : "🎙️"}
+        </button>
+      )}
 
       {/* ── Name prompt modal ── */}
       {showNamePrompt && (
