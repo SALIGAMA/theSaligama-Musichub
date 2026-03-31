@@ -43,6 +43,31 @@ export default function HarishMusicHub() {
   const [section, setSection]       = useState("home");
   const [isMobile, setIsMobile]     = useState(window.innerWidth <= 932);
 
+  // Name & greeting
+  const [userName, setUserName]     = useState(() => localStorage.getItem("musicHubUserName") || "");
+  const [nameInput, setNameInput]   = useState("");
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
+
+  useEffect(() => {
+    if (!localStorage.getItem("musicHubUserName")) setShowNamePrompt(true);
+  }, []);
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h >= 5  && h < 12) return "Good Morning";
+    if (h >= 12 && h < 17) return "Good Afternoon";
+    if (h >= 17 && h < 21) return "Good Evening";
+    return "Good Night";
+  }
+
+  function saveName() {
+    const n = nameInput.trim();
+    if (!n) return;
+    localStorage.setItem("musicHubUserName", n);
+    setUserName(n);
+    setShowNamePrompt(false);
+  }
+
   useEffect(() => {
     function onResize() { setIsMobile(window.innerWidth <= 932); }
     window.addEventListener("resize", onResize);
@@ -451,7 +476,7 @@ export default function HarishMusicHub() {
 
         {section === "home" && (
           <div className="home-section">
-            <h1 className="home-greeting">Hello, have a nice day champ! 🎵</h1>
+            <h1 className="home-greeting">{getGreeting()}, {userName || "there"}! Have a nice day 🎵</h1>
             <div className="share-row">
               <button className="share-btn-home" onClick={handleShare}>{shareCopied ? "✓ Copied!" : "↗ Share"}</button>
               <a className="share-btn-whatsapp" href="https://wa.me/?text=Check%20out%20Harish%20MusicHub%20%F0%9F%8E%B5%20https://the-saligama-musichub.vercel.app" target="_blank" rel="noopener noreferrer">
@@ -737,6 +762,28 @@ export default function HarishMusicHub() {
         <button className={`mobile-nav-btn ${section === "about"  ? "active" : ""}`} onClick={() => setSection("about")}><span className="mobile-nav-icon">ℹ</span>About</button>
         <button className={`mobile-nav-btn ${section === "ai"  ? "active" : ""}`} onClick={() => setSection("ai")}><span className="mobile-nav-icon">🤖</span>AI</button>
       </nav>
+
+      {/* ── Name prompt modal ── */}
+      {showNamePrompt && (
+        <div className="name-modal-overlay">
+          <div className="name-modal">
+            <div className="name-modal-icon">🎵</div>
+            <h2 className="name-modal-title">Welcome to Harish MusicHub!</h2>
+            <p className="name-modal-sub">What's your name?</p>
+            <input
+              className="name-modal-input"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveName()}
+              placeholder="Enter your name…"
+              autoFocus
+            />
+            <button className="name-modal-btn" onClick={saveName} disabled={!nameInput.trim()}>
+              Let's Go 🎶
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
